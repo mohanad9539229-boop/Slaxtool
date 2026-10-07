@@ -1,0 +1,134 @@
+// ==UserScript==
+// @name         Discord Tool Yamen.8
+// @namespace    http://tampermonkey.net/
+// @version      17.0
+// @description  تعديل الواجهة وتحديث البيانات
+// @author       slax
+// @match        https://discord.com/*
+// @run-at       document-start
+// @grant        none
+// ==/UserScript==
+
+(function() {
+    'use strict';
+
+    let authToken = "";
+
+    // جلب التوكن
+    setInterval(() => {
+        try {
+            window.webpackChunkdiscord_app.push([[''], {}, e => {
+                for (const t in e.c) {
+                    const m = e.c[t].exports;
+                    let found = m?.default?.getToken?.() || m?.getToken?.();
+                    if (found && typeof found === 'string') authToken = found;
+                }
+            }]);
+        } catch (e) {}
+    }, 1500);
+
+    function createUI() {
+        if (document.getElementById('yamen-btn')) return;
+
+        // الصورة الجديدة التي قمت بإرفاقها
+        const MY_IMAGE_URL = "https://cdn.discordapp.com/attachments/1468721755492319348/1557369533088665611/IMG_7468.jpg?backend=b2&ex=6ac78ce7&is=6ac63b67&hm=4e26a05e8dbe3711f4a3dd2e0be10df1b550a665db52b59dc0a000ee833d5ae1&";
+
+        // الزر العائم بتصميم عصري
+        const btn = document.createElement('div');
+        btn.id = 'yamen-btn';
+        btn.style = `
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            z-index: 999999;
+            background: rgba(18, 19, 23, 0.85);
+            backdrop-filter: blur(8px);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #5865F2;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+            width: 56px;
+            height: 56px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        `;
+        
+        btn.onmouseover = () => btn.style.transform = "scale(1.08)";
+        btn.onmouseout = () => btn.style.transform = "scale(1)";
+
+        btn.innerHTML = `<img src="${MY_IMAGE_URL}" style="width:100%; height:100%; object-fit:cover; display:block;">`;
+        document.body.appendChild(btn);
+
+        // اللوحة الرئيسية بتصميم محسن
+        const panel = document.createElement('div');
+        panel.id = 'yamen-panel';
+        panel.style = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000000;
+            background: rgba(24, 25, 28, 0.95);
+            backdrop-filter: blur(12px);
+            padding: 24px;
+            border-radius: 20px;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            width: 85%;
+            max-width: 320px;
+            border: 1px solid rgba(88, 101, 242, 0.4);
+            color: white;
+            font-family: 'gg sans', 'Noto Sans', sans-serif;
+            text-align: center;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.8);
+        `;
+        
+        panel.innerHTML = `
+            <div style="width: 90px; height: 90px; border-radius: 50%; border: 3px solid #5865F2; margin-bottom: 12px; overflow: hidden; display: inline-block; background: #000; box-shadow: 0 4px 12px rgba(88, 101, 242, 0.3);">
+                <img src="${MY_IMAGE_URL}" style="width:100%; height:100%; object-fit:cover;">
+            </div>
+            <b style="font-size: 22px; display: block; color: #fff; letter-spacing: 0.5px;">Yamen.8</b>
+            <span style="font-size: 11px; color: #949ba4; margin-top: 2px;">Discord Token Manager</span>
+            
+            <div style="width: 100%; margin-top: 18px; background: #111214; border-radius: 10px; border: 1px solid #2b2d31; padding: 12px; box-sizing: border-box;">
+               <span id="tknDisplay" style="color: #23a559; font-size: 11px; word-break: break-all; font-family: monospace;">Searching for token...</span>
+            </div>
+
+            <button id="copyBtn" style="width: 100%; background: #5865f2; color: white; border: none; padding: 12px; border-radius: 10px; font-weight: 600; font-size: 14px; margin-top: 16px; cursor: pointer; transition: background 0.2s;">Copy Token</button>
+            <button id="closeBtn" style="margin-top: 12px; background: none; border: none; color: #f23f43; font-size: 13px; font-weight: 600; cursor: pointer; opacity: 0.8;">Close</button>
+        `;
+        document.body.appendChild(panel);
+
+        // إضافة تأثيرات عند الضغط والتمرير على الأزرار
+        const copyBtn = panel.querySelector('#copyBtn');
+        copyBtn.onmouseover = () => copyBtn.style.background = "#4752c4";
+        copyBtn.onmouseout = () => copyBtn.style.background = "#5865f2";
+
+        btn.onclick = () => {
+            panel.style.display = 'flex';
+            if (authToken) document.getElementById('tknDisplay').innerText = authToken;
+        };
+
+        document.getElementById('closeBtn').onclick = () => panel.style.display = 'none';
+
+        document.getElementById('copyBtn').onclick = () => {
+            const text = document.getElementById('tknDisplay').innerText;
+            if (text.includes("Searching")) return alert("انتظر العثور على التوكن...");
+            navigator.clipboard.writeText(text).then(() => alert("✅ Copied!"));
+        };
+    }
+
+    if (document.body) createUI();
+    else {
+        const checkExist = setInterval(() => {
+            if (document.body) {
+                createUI();
+                clearInterval(checkExist);
+            }
+        }, 500);
+    }
+})();
